@@ -1,8 +1,17 @@
 # Serviço de Tradução Distribuído
 
-[Repositório GitHub](https://github.com/LuizPagliari/tradutor)
-
 Este projeto implementa um serviço de tradução distribuído utilizando Node.js, arquitetura Domain-Driven Design (DDD), e integração com a Google Cloud Translation API. Ele é composto por dois serviços principais: uma API e um serviço worker, que se comunicam através de uma fila de mensagens (RabbitMQ) e persistem dados em um banco de dados PostgreSQL.
+
+## Índice
+
+- [Arquitetura](#arquitetura)
+- [Pré-requisitos](#pré-requisitos)
+- [Configuração](#configuração)
+  - [1. Credenciais da Google Cloud Translation API](#1-credenciais-da-google-cloud-translation-api)
+  - [2. Variáveis de Ambiente (.env)](#2-variáveis-de-ambiente-env)
+- [Como Rodar a Aplicação](#como-rodar-a-aplicação)
+- [Endpoints da API](#endpoints-da-api)
+- [Observações](#observações)
 
 ## Arquitetura
 
