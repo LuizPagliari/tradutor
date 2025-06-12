@@ -1,0 +1,91 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:latest
+    container_name: translation-postgres
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: translation_service
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: translation-rabbitmq
+    ports:
+      - "5672:5672"  # AMQP protocol port
+      - "15672:15672"  # Management UI port
+    environment:
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: guest
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "check_port_connectivity"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  translation-api:
+    build:
+      context: .
+      dockerfile: packages/translation-api/Dockerfile
+    container_name: translation-api
+    ports:
+      - "3001:3001"
+    environment:
+      NODE_ENV: development
+      PORT: 3001
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_USERNAME: postgres
+      DB_PASSWORD: postgres
+      DB_DATABASE: translation_service
+      RABBITMQ_URL: amqp://guest:guest@rabbitmq:5672
+      TRANSLATION_EXCHANGE: translation_exchange
+      TRANSLATION_QUEUE: translation_queue
+      TRANSLATION_ROUTING_KEY: translation.request
+      GOOGLE_APPLICATION_CREDENTIALS: /app/packages/translation-worker/config/google-credentials.json # Path inside worker container
+      GOOGLE_CLOUD_PROJECT: sacola-f2d93
+    depends_on:
+      postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+
+  translation-worker:
+    build:
+      context: .
+      dockerfile: packages/translation-worker/Dockerfile
+    container_name: translation-worker
+    environment:
+      NODE_ENV: development
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_USERNAME: postgres
+      DB_PASSWORD: postgres
+      DB_DATABASE: translation_service
+      RABBITMQ_URL: amqp://guest:guest@rabbitmq:5672
+      TRANSLATION_EXCHANGE: translation_exchange
+      TRANSLATION_QUEUE: translation_queue
+      TRANSLATION_ROUTING_KEY: translation.request
+      GOOGLE_APPLICATION_CREDENTIALS: /app/packages/translation-worker/config/google-credentials.json # Path inside container
+      GOOGLE_CLOUD_PROJECT: sacola-f2d93
+    depends_on:
+      postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+
+volumes:
+  postgres_data:
+  rabbitmq_data: 

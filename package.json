@@ -1,0 +1,22 @@
+{
+  "name": "translation-service",
+  "version": "1.0.0",
+  "private": true,
+  "workspaces": [
+    "packages/*"
+  ],
+  "scripts": {
+    "start:api": "npm run start --workspace=translation-api",
+    "start:worker": "npm run start --workspace=translation-worker",
+    "dev:api": "npm run dev --workspace=translation-api",
+    "dev:worker": "npm run dev --workspace=translation-worker",
+    "test": "npm run test --workspaces",
+    "build": "npm run build --workspaces"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "dependencies": {
+    "@google-cloud/translate": "^9.1.0"
+  }
+}
